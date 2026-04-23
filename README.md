@@ -318,9 +318,7 @@ MIT License - See LICENSE file
 - **SDV 1.9+** - Synthetic Data Vault for synthesis methods
 - **Google Generative AI** - Gemini API access
 - **UCI Adult Dataset** - Public benchmark data
-- **Privacy in Statistical Databases Community** - Research direction inspiration
 
 ---
 
-*Last Updated: April 23, 2026*  
 *Next Update: After Phase 2 completion (April 24-25, 2026)*

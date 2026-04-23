@@ -1,0 +1,71 @@
+{
+  "created": "2026-04-20T12:41:09.582086",
+  "real_data": {
+    "path": "data/real/adult.csv",
+    "shape": [
+      30162,
+      15
+    ],
+    "columns": [
+      "age",
+      "workclass",
+      "fnlwgt",
+      "education",
+      "education_num",
+      "marital_status",
+      "occupation",
+      "relationship",
+      "race",
+      "sex",
+      "capital_gain",
+      "capital_loss",
+      "hours_per_week",
+      "native_country",
+      "income"
+    ],
+    "dtypes": {
+      "age": "int64",
+      "workclass": "str",
+      "fnlwgt": "int64",
+      "education": "str",
+      "education_num": "int64",
+      "marital_status": "str",
+      "occupation": "str",
+      "relationship": "str",
+      "race": "str",
+      "sex": "str",
+      "capital_gain": "int64",
+      "capital_loss": "int64",
+      "hours_per_week": "int64",
+      "native_country": "str",
+      "income": "str"
+    }
+  },
+  "synthetic_data": {
+    "ctgan": {
+      "path": "data/synthetic/ctgan/synthetic.csv",
+      "exists": false,
+      "shape": null
+    },
+    "tvae": {
+      "path": "data/synthetic/tvae/synthetic.csv",
+      "exists": false,
+      "shape": null
+    },
+    "cart": {
+      "path": "data/synthetic/cart/synthetic.csv",
+      "exists": false,
+      "shape": null
+    },
+    "great": {
+      "path": "data/synthetic/great/synthetic.csv",
+      "exists": false,
+      "shape": null
+    },
+    "tabddpm": {
+      "path": "data/synthetic/tabddpm/synthetic.csv",
+      "exists": false,
+      "shape": null
+    }
+  }
+}

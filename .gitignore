@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+
+# Data files (large, regenerated)
+data/synthetic/*/synthetic.csv
+data/real/*.csv
+!data/README.md
+
+# Results (can regenerate)
+results/*.jsonl
+results/*.csv
+results/fig*.png
+results/*.log
+
+# Logs
+*.log
+*.txt
+experiment*.log
+analyze*.log
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Papers (optional - include these)
+paper/*.pdf
+paper/*.aux
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz

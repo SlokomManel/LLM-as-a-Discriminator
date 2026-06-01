@@ -123,3 +123,6 @@ python make_final_plots.py
 ## License
 
 MIT (see LICENSE).
+
+## Contact
+Manel Slokom: manel.slokom@live.fr

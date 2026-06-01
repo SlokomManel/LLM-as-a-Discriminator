@@ -165,9 +165,7 @@ PSD2026/
 ## 📞 Contact & Attribution
 
 **Authors:** Manel Slokom  
-**Research Direction:** Privacy in Synthetic Data  
-**Venue:** Privacy in Statistical Databases (PSD 2026)  
-**Repository:** https://github.com/SlokomManel/LLM-as-a-Discriminator (Private)
+**email:** manel.slokom@live.fr
 
 ---
 

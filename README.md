@@ -13,54 +13,6 @@ This project proposes **LLM discrimination accuracy as a practical privacy metri
 **Privacy Implication:** If an LLM achieves high discrimination accuracy, the synthetic data retains statistical patterns that distinguish it from the real data, suggesting potential privacy leakage.
 
 ---
-
-## 📊 Current Status
-
-### Phase 1: Baseline Pilot ✅ Complete
-- **65 trials** with Gemini 2.5 Flash
-- **Overall accuracy: 23.1%** (baseline discrimination ability)
-- Method rankings established
-
-### Phase 2: Multi-Model Expansion 🔄 In Progress
-- **1,603 trials** collected (as of April 23, 2026)
-- Tested: Gemini 2.5 Flash, Gemini 2.5 Pro (partial)
-- Remaining: Gemini 2.0 Flash, Gemini 3.x variants, Gemma models
-- **Expected completion:** April 24-25, 2026 (after API quota reset)
-
-### Phase 3: Detailed Analysis 📋 Planned
-- Attribute-level analysis (which columns leak privacy?)
-- Human baseline testing
-- Confidence calibration
-
-### Phase 4: Paper Draft 📝 Planned
-- Complete manuscript for PSD submission
-
----
-
-## 🔒 Key Findings So Far
-
-### Privacy Rankings (Lower = Better Privacy)
-
-| Rank | Method | Discrimination Accuracy | Privacy Assessment |
-|------|--------|------------------------|-------------------|
-| 1 | **CART** | 0.5% | 🟢 Excellent |
-| 2 | **GReat** | 0.7% | 🟢 Excellent |
-| 3 | **TVAE** | 1.0% | 🟢 Excellent |
-| 4 | **CTGAN** | 1.2% | 🟡 Good |
-| 5 | **TabDDPM** | 1.3% | 🟡 Good |
-| 6 | **GaussianCopula** | 1.3% | 🟡 Good |
-
-**Interpretation:** 
-- LLMs achieve ~1% accuracy across all methods (near random guessing at 50%)
-- **CART synthetic data is hardest to distinguish** from real data
-- Even the "worst" method (GaussianCopula) maintains strong privacy
-
-### Key Observations
-- **Excellent synthetic data privacy** across all tested methods
-- **Model bias:** LLMs favor predicting "REAL" label (31% REAL vs 15% SYNTHETIC guess rate)
-- **Confidence unreliability:** Models report 96.9% confidence even at 0% accuracy
-- **Metadata effect minimal:** Adding statistical summaries (C2 condition) only improves accuracy by 4%
-
 ---
 
 ## 🏗️ System Architecture
@@ -105,16 +57,6 @@ This project proposes **LLM discrimination accuracy as a practical privacy metri
 
 ---
 
-## 📈 Results & Visualizations
-
-Generated visualizations (in `results/` folder):
-- `fig1_condition_analysis.png` — Accuracy by condition (C1 vs C2)
-- `fig2_privacy_rankings.png` — Privacy ranking chart (method comparison)
-- `fig3_confidence_calibration.png` — Confidence vs correctness
-- `fig4_prediction_bias.png` — LLM prediction bias analysis
-
----
-
 ## 🚀 How to Run
 
 ### Prerequisites
@@ -146,12 +88,6 @@ Free tier limits:
 ```bash
 bash resume_phase2.sh
 ```
-
-Tests remaining models in sequence:
-- `gemini-2.0-flash`
-- `gemini-3-flash-preview`
-- `gemini-3-pro-preview`
-- `gemma-3-27b-it`
 
 Runs in background (can close laptop). Monitor with:
 ```bash
@@ -218,45 +154,6 @@ PSD2026/
 
 ---
 
-## 📚 Research Positioning
-
-### Privacy in Statistical Databases Connection
-
-This work addresses a critical challenge in synthetic data: **How do we measure privacy leakage practically?**
-
-Traditional approaches:
-- **Differential Privacy:** Formal guarantees; hard to tune for utility-privacy tradeoffs
-- **k-Anonymity:** Checks quasi-identifiers; doesn't capture statistical leakage
-- **Membership Inference Attacks:** Computationally expensive; requires model access
-
-**Our Approach:**
-- **LLM Discrimination:** Practical, scalable, interpretable
-- Measures whether synthetic data *looks* different from real data
-- Complements formal privacy guarantees
-- Applicable to any synthetic data generator
-
-### Novel Contribution
-
-We propose **LLM discrimination accuracy as a practical privacy metric** and validate it across:
-- 6 synthetic data generators (SDV 1.9+)
-- Multiple LLM models (Google Gemini, OpenAI GPT-4, etc.)
-- Two prompt conditions (C1: raw data, C2: +statistics)
-- 2,000+ trials for statistical significance
-
----
-
-## 🔬 Methodology
-
-### Data Generation
-- **Real data:** Adult Census Income dataset (30,162 records × 15 attributes)
-- **Synthetic methods:** 
-  - CTGAN (neural network-based)
-  - TVAE (variational autoencoder)
-  - GaussianCopula (statistical)
-  - CART (decision tree-based)
-  - GReat (transformer-based)
-  - TabDDPM (diffusion model)
-
 ### Experiment Design
 - **Per method:** 50 trials × 2 conditions × 2 labels = 200 trials
 - **Conditions:**
@@ -264,51 +161,6 @@ We propose **LLM discrimination accuracy as a practical privacy metric** and val
   - **C2:** Same + statistical summaries (mean, std, distribution)
 - **Labels:** REAL (ground truth) vs SYNTHETIC (generated)
 - **LLM Task:** Discriminate real from synthetic with confidence scores
-
-### Privacy Metric
-$$\text{Privacy Score} = 100 - \text{Discrimination Accuracy (\%)}$$
-
-High score = LLM struggles = Better privacy
-
----
-
-## 🎓 Expected Contributions
-
-1. **Novel Privacy Metric:** LLM discrimination as practical privacy assessment
-2. **Empirical Evaluation:** Systematic comparison of 6 synthesizers
-3. **Model Analysis:** How do LLM capabilities affect privacy assessment?
-4. **Practical Guidance:** Recommendations for synthetic data generators
-
----
-
-## 📋 Next Steps
-
-**Tomorrow (April 24):**
-1. Resume Phase 2 testing after midnight UTC (quota reset)
-2. Complete testing of Gemini 2.0 Flash and 3.x models
-3. Re-run analysis with full dataset (~4,000 trials)
-
-**Week of April 24:**
-1. Phase 3: Attribute-level analysis
-2. Human baseline testing (Streamlit app)
-3. Confidence calibration analysis
-
-**Late April:**
-1. Draft complete manuscript
-2. Generate final visualizations
-3. Submit to PSD 2026
-
----
-
-## 💡 Key Insights
-
-1. **Synthetic data is surprisingly private** — LLMs struggle to discriminate
-2. **CART outperforms complex methods** — sometimes simpler is better for privacy
-3. **Metadata adds minimal privacy risk** — C2 only 4% worse than C1
-4. **LLMs are overconfident** — 96.9% confidence at 0% accuracy
-5. **Not all models are equal** — Gemini 2.5 Flash much better discriminator than 2.5 Pro
-
----
 
 ## 📞 Contact & Attribution
 
@@ -329,8 +181,5 @@ MIT License - See LICENSE file
 
 - **SDV 1.9+** - Synthetic Data Vault for synthesis methods
 - **Google Generative AI** - Gemini API access
-- **UCI Adult Dataset** - Public benchmark data
 
 ---
-
-*Next Update: After Phase 2 completion (April 24-25, 2026)*

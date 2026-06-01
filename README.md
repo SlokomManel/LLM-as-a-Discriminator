@@ -125,10 +125,22 @@ source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Set API keys
-export GOOGLE_API_KEY="your-key-here"
 ```
+
+### API Key Setup
+
+Create a `.env` file in the project root (already in `.gitignore` — never commit this):
+```bash
+# .env
+GOOGLE_API_KEY="AIzaSy..."          # https://aistudio.google.com/apikey
+GROQ_API_KEY="gsk_..."              # https://console.groq.com/keys
+```
+
+Free tier limits:
+| Provider | Model | Limit |
+|----------|-------|-------|
+| Google AI Studio | `gemini-2.5-flash` | 1,500 req/day |
+| Groq | `llama-3.1-8b-instant` | 14,400 req/day |
 
 ### Phase 2: Resume Multi-Model Testing (After Midnight UTC)
 ```bash

@@ -30,6 +30,14 @@ RESULTS_DIR = Path(os.getenv("RESULTS_DIR", "results"))
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def _is_quota_error(exc: Exception) -> bool:
+    """Return True if the exception looks like an API quota / rate-limit error."""
+    msg = str(exc).lower()
+    return any(k in msg for k in ("429", "quota", "rate limit", "rate_limit",
+                                   "resource_exhausted", "too many requests",
+                                   "requests per minute", "requests per day"))
+
+
 # ── Utilities ──────────────────────────────────────────────────────────────────
 
 def df_to_markdown(df: pd.DataFrame, n_rows: int = 20) -> str:
@@ -179,6 +187,7 @@ def run_trial(
     trial_id: int,
     n_rows_shown: int = 20,
     retry_on_fail: bool = True,
+    max_quota_retries: int = 5,
 ) -> dict:
     """Run a single discrimination trial with shuffled dataset labels."""
     
@@ -193,31 +202,44 @@ def run_trial(
 
     call_fn = PROVIDER_MAP[provider]
 
-    try:
-        response = call_fn(system, user, model=model)
-    except Exception as e:
-        logger.warning(f"Trial {trial_id} failed: {e}. Retrying once...")
-        if retry_on_fail:
-            time.sleep(2)
-            try:
-                response = call_fn(system, user, model=model)
-            except Exception as e2:
-                logger.error(f"Trial {trial_id} failed twice: {e2}")
-                response = {
-                    "verdict": "ERROR",
-                    "confidence": -1,
-                    "reasoning": str(e2),
-                    "red_flags": [],
-                    "supporting_evidence": [],
-                }
-        else:
-            response = {
-                "verdict": "ERROR",
-                "confidence": -1,
-                "reasoning": str(e),
-                "red_flags": [],
-                "supporting_evidence": [],
-            }
+    # Quota-aware retry: up to max_quota_retries retries with exponential back-off on 429 errors
+    # (set max_quota_retries=0 to fail fast without sleeping — use from backfill scripts).
+    # One quick retry (2 s) for transient non-quota failures.
+    response = None
+    for attempt in range(max_quota_retries + 1):
+        try:
+            response = call_fn(system, user, model=model)
+            break
+        except Exception as e:
+            if not retry_on_fail:
+                logger.error(f"Trial {trial_id} failed: {e}")
+                response = {"verdict": "ERROR", "confidence": -1,
+                            "reasoning": str(e), "red_flags": [], "supporting_evidence": []}
+                break
+            if _is_quota_error(e):
+                if max_quota_retries == 0:
+                    logger.warning(f"Trial {trial_id} quota error (fail-fast, no retries). Skipping.")
+                    response = {"verdict": "ERROR", "confidence": -1,
+                                "reasoning": str(e), "red_flags": [], "supporting_evidence": []}
+                    break
+                wait = min(60 * (2 ** attempt), 600)  # 60 → 120 → 240 → 480 → 600 → 600 s
+                logger.warning(
+                    f"Trial {trial_id} quota error (attempt {attempt + 1}/{max_quota_retries + 1}). "
+                    f"Sleeping {wait}s before retry...")
+                time.sleep(wait)
+            elif attempt == 0:
+                logger.warning(f"Trial {trial_id} failed: {e}. Retrying once...")
+                time.sleep(2)
+            else:
+                logger.error(f"Trial {trial_id} failed on attempt {attempt + 1}: {e}")
+                response = {"verdict": "ERROR", "confidence": -1,
+                            "reasoning": str(e), "red_flags": [], "supporting_evidence": []}
+                break
+    if response is None:
+        logger.error(f"Trial {trial_id} exhausted all {max_quota_retries + 1} quota retries.")
+        response = {"verdict": "ERROR", "confidence": -1,
+                    "reasoning": "quota exceeded after all retries",
+                    "red_flags": [], "supporting_evidence": []}
 
     verdict = response.get("verdict", "ERROR").upper()
     correct = verdict == true_label
@@ -253,9 +275,14 @@ def run_experiment_single_method(
     n_rows_shown: int = 20,
     sample_rows: int = None,
     output_file: str = None,
+    resume: bool = False,
+    max_quota_retries: int = 5,
 ):
     """
     Run discrimination trials for a specific synthetic method.
+
+    Set max_quota_retries=0 to fail immediately on quota errors without sleeping
+    (recommended when calling from automated backfill scripts).
     """
     if output_file is None:
         ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
@@ -271,10 +298,41 @@ def run_experiment_single_method(
             trial_queue.append(("REAL", condition))
             trial_queue.append(("SYNTHETIC", condition))
 
-    random.shuffle(trial_queue)
+    # Deterministic shuffle so the queue is reproducible for resume
+    queue_seed = abs(hash(method_name)) % (2 ** 31)
+    rng = random.Random(queue_seed)
+    rng.shuffle(trial_queue)
 
+    # Resume: load successful (non-ERROR) trials only, rewrite file stripping errors,
+    # then continue from where the last success left off.
+    n_completed = 0
+    if resume and Path(str(output_file)).exists():
+        good_lines = []
+        with open(output_file) as _rf:
+            for _line in _rf:
+                try:
+                    t = json.loads(_line)
+                    if t.get("predicted_label", "ERROR") != "ERROR":
+                        good_lines.append(_line.rstrip("\n"))
+                except json.JSONDecodeError:
+                    pass
+        n_completed = len(good_lines)
+        if n_completed >= len(trial_queue):
+            logger.info(f"All {len(trial_queue)} trials already complete for {method_name}. Skipping.")
+            return []
+        # Rewrite file keeping only successes (removes any ERROR lines from previous run)
+        with open(output_file, "w") as _wf:
+            if good_lines:
+                _wf.write("\n".join(good_lines) + "\n")
+        logger.info(
+            f"Resuming {method_name}: {n_completed} successes kept, "
+            f"{len(trial_queue) - n_completed} remaining.")
+        trial_queue = trial_queue[n_completed:]
+        trial_id = n_completed
+
+    open_mode = "a" if (resume and n_completed > 0) else "w"
     logger.info(f"Running {len(trial_queue)} trials for {method_name}...")
-    with open(output_file, "w") as f:
+    with open(output_file, open_mode) as f:
         for true_label, condition in tqdm(trial_queue, desc=f"{method_name} | {provider} / {model}"):
             df = real_df if true_label == "REAL" else synthetic_df
 
@@ -290,8 +348,9 @@ def run_experiment_single_method(
                 model=model,
                 trial_id=trial_id,
                 n_rows_shown=n_rows_shown,
+                max_quota_retries=max_quota_retries,
             )
-            
+
             # Add method name to result
             result["synthetic_method"] = method_name
 
@@ -331,6 +390,7 @@ def run_experiment(
     conditions: list = ["C1", "C2"],
     n_rows_shown: int = 20,
     sample_rows: int = None,
+    resume: bool = False,
 ):
     """
     Run the full discrimination experiment across multiple synthetic methods.
@@ -392,6 +452,7 @@ def run_experiment(
                 conditions=conditions,
                 n_rows_shown=n_rows_shown,
                 sample_rows=sample_rows,
+                resume=resume,
             )
             all_aggregated_results.extend(results)
         except Exception as e:
@@ -556,7 +617,15 @@ See FREE_API_SETUP.md for setup instructions!
     parser.add_argument("--conditions", nargs="+", default=["C1", "C2"])
     parser.add_argument("--n_rows_shown", type=int, default=20)
     parser.add_argument("--sample_rows", type=int, default=None)
+    parser.add_argument("--results-dir", default=None, help="Override results output directory (default: $RESULTS_DIR env var or 'results')")
+    parser.add_argument("--resume", action="store_true", default=False,
+                        help="Resume from existing output files, skipping already-completed trials")
     args = parser.parse_args()
+
+    # Override RESULTS_DIR if provided via CLI
+    if args.results_dir:
+        RESULTS_DIR = Path(args.results_dir)
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
     # Determine which models to test
     models_to_test = args.compare_models if args.compare_models else [args.model]
@@ -593,6 +662,7 @@ See FREE_API_SETUP.md for setup instructions!
                 conditions=args.conditions,
                 n_rows_shown=args.n_rows_shown,
                 sample_rows=args.sample_rows,
+                resume=args.resume,
             )
         
         # Brief pause between models

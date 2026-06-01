@@ -1,0 +1,7 @@
+Rank,Method,Condition,DRS_%,Privacy_Level,Adversarial_Capability,Est_k-anonymity_LB,Est_DP_epsilon
+1,tvae,C1,3.83,HIGH,0,1000,0.1
+2,gaussian_copula,C2,4.33,HIGH,0,1000,0.1
+3,gaussian_copula,C1,4.5,HIGH,0,1000,0.1
+4,tvae,C2,4.67,HIGH,0,1000,0.1
+5,ctgan,C2,7.5,HIGH,0,1000,0.1
+6,ctgan,C1,8.0,HIGH,0,1000,0.1

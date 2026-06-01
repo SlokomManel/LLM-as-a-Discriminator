@@ -1,0 +1,7 @@
+Method,Condition,Accuracy_on_REAL,Accuracy_on_SYNTHETIC
+ctgan,C1,N/A,N/A
+ctgan,C2,N/A,N/A
+gaussian_copula,C1,N/A,N/A
+gaussian_copula,C2,N/A,N/A
+tvae,C1,N/A,N/A
+tvae,C2,N/A,N/A

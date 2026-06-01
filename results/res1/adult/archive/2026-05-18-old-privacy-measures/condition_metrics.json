@@ -1,0 +1,94 @@
+{
+  "metrics": {
+    "C1": {
+      "overall_accuracy": 5.444444444444444,
+      "privacy_score": 94.55555555555556,
+      "avg_confidence": 7.4,
+      "by_method": {
+        "gaussian_copula": {
+          "accuracy": 4.5,
+          "privacy_score": 95.5,
+          "confidence": 6.491666666666666,
+          "n_trials": 600
+        },
+        "ctgan": {
+          "accuracy": 8.0,
+          "privacy_score": 92.0,
+          "confidence": 9.955,
+          "n_trials": 600
+        },
+        "tvae": {
+          "accuracy": 3.833333333333333,
+          "privacy_score": 96.16666666666667,
+          "confidence": 5.753333333333333,
+          "n_trials": 600
+        }
+      },
+      "by_label": {
+        "REAL": {
+          "accuracy": 9.444444444444445,
+          "n_trials": 900
+        },
+        "SYNTHETIC": {
+          "accuracy": 1.4444444444444444,
+          "n_trials": 900
+        }
+      },
+      "n_total": 1800
+    },
+    "C2": {
+      "overall_accuracy": 5.5,
+      "privacy_score": 94.5,
+      "avg_confidence": 6.82,
+      "by_method": {
+        "gaussian_copula": {
+          "accuracy": 4.333333333333334,
+          "privacy_score": 95.66666666666667,
+          "confidence": 6.126666666666667,
+          "n_trials": 600
+        },
+        "ctgan": {
+          "accuracy": 7.5,
+          "privacy_score": 92.5,
+          "confidence": 9.45,
+          "n_trials": 600
+        },
+        "tvae": {
+          "accuracy": 4.666666666666667,
+          "privacy_score": 95.33333333333333,
+          "confidence": 4.883333333333334,
+          "n_trials": 600
+        }
+      },
+      "by_label": {
+        "REAL": {
+          "accuracy": 9.222222222222221,
+          "n_trials": 900
+        },
+        "SYNTHETIC": {
+          "accuracy": 1.7777777777777777,
+          "n_trials": 900
+        }
+      },
+      "n_total": 1800
+    }
+  },
+  "degradation": {
+    "overall_absolute_degradation": 0.055555555555557135,
+    "overall_relative_degradation": 0.0587544065804952,
+    "by_method": {
+      "gaussian_copula": {
+        "absolute": -0.1666666666666714,
+        "relative": -0.1745200698080329
+      },
+      "ctgan": {
+        "absolute": -0.5,
+        "relative": -0.5434782608695652
+      },
+      "tvae": {
+        "absolute": 0.8333333333333428,
+        "relative": 0.8665511265164744
+      }
+    }
+  }
+}

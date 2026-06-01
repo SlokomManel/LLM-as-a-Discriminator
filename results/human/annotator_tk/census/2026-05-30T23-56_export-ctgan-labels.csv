@@ -1,0 +1,3 @@
+﻿true_label,correct,total,accuracy
+REAL,10,12,83.3
+SYNTHETIC,7,8,87.5

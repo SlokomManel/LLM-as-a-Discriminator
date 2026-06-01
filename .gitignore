@@ -54,3 +54,12 @@ paper/*.aux
 paper/*.fls
 paper/*.fdb_latexmk
 paper/*.synctex.gz
+
+# Public repo cleanup
+paper/**
+docs/**
+results/archive_invalid_*/
+results/res1/
+results/*/archive/
+results/**/*.jsonl
+results/**/*_summary.csv

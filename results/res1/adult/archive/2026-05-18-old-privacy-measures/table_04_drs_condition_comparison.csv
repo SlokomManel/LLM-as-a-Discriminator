@@ -1,4 +1,0 @@
-Method,C1_DRS_%,C1_Privacy,C2_DRS_%,C2_Privacy,DRS_Degradation_pp
-ctgan,8.0,HIGH,7.5,HIGH,0.5
-gaussian_copula,4.5,HIGH,4.33,HIGH,0.17
-tvae,3.83,HIGH,4.67,HIGH,-0.83
